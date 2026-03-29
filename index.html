@@ -1,0 +1,213 @@
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1"
+/><!DOCTYPE html>
+<html lang="uz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Asadbek Muratov Kafe Menyusi</title>
+    <script></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+      }
+      #menu-posts li img {
+        width: 250px;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-right: 10px;
+      }
+
+      #menu-posts li {
+        display: flex;
+        align-items: center; /* rasm va matn bir qatorda tekis */
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .menu-item {
+        display: flex;
+        align-items: center;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1,
+      h2 {
+        text-align: center;
+        color: #333;
+      }
+
+      #qrcode {
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      #menu,
+      #order {
+        margin: 20px 0;
+      }
+
+      #menu-posts,
+      #order-posts {
+        list-style: none;
+        padding: 0;
+      }
+
+      #menu-posts li,
+      #order-posts li {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #218838;
+      }
+
+      p {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Asadbek Muratov Kafe Menyusi</h1>
+      <!-- <div id="qrcode"></div> -->
+      <div id="menu">
+        <h2>Taomlar</h2>
+        <ul id="menu-posts">
+          <li>
+            <span>Osh - 25000 UZS</span>
+            <img src="images/osh.jpg" alt="Osh" />
+            <button onclick="addToOrder('Osh', 25000)">
+              Buyurtma qo'shish
+            </button>
+          </li>
+          <li>
+            <span>Somsa - 10000 UZS</span>
+            <img src="images/somsa.jpg" alt="Somsa" />
+            <button onclick="addToOrder('Somsa', 10000)">
+              Buyurtma qo'shish
+            </button>
+          </li>
+          <li>
+            <span>Shashlik - 30000 UZS</span>
+            <img src="images/shashlik.jpg" alt="Shashlik" />
+            <button onclick="addToOrder('Shashlik', 30000)">
+              Buyurtma qo'shish
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div id="order">
+        <h2>Buyurtmalar</h2>
+        <ul id="order-posts"></ul>
+        <p>Jami: <span id="total">0</span> UZS</p>
+        <button onclick="submitOrder()">Buyurtma yuborish</button>
+      </div>
+      <!--<p><a href="kitchen.html">Oshxona sahifasiga o'tish</a></p>-->
+    </div>
+    <script>
+      let order = [];
+      let total = 0;
+
+      // Buyurtmalar ro'yxatini yangilash
+      function updateOrderList() {
+        const orderList = document.getElementById("order-posts");
+        const totalElement = document.getElementById("total");
+        orderList.innerHTML = "";
+        order.forEach((item) => {
+          const li = document.createElement("li");
+          li.textContent = `${item.item} - ${item.price} UZS`;
+          orderList.appendChild(li);
+        });
+        totalElement.textContent = total;
+      }
+
+      // Buyurtma qo'shish
+      function addToOrder(item, price) {
+        order.push({ item, price });
+        total += price;
+        updateOrderList();
+      }
+
+      // Buyurtma yuborish
+      function submitOrder() {
+        if (order.length === 0) {
+          alert("Buyurtma boʻsh!");
+          return;
+        }
+        // localStorage'dan mavjud buyurtmalarni olish
+        let submittedOrders =
+          JSON.parse(localStorage.getItem("submittedOrders")) || [];
+        const newOrder = {
+          id: submittedOrders.length + 1,
+          items: order,
+          total: total,
+          timestamp: new Date().toISOString(),
+        };
+        submittedOrders.push(newOrder);
+        try {
+          localStorage.setItem(
+            "submittedOrders",
+            JSON.stringify(submittedOrders)
+          );
+          alert(
+            "Buyurtma yuborildi va saqlandi:\n" +
+              order
+                .map((item) => `${item.item}: ${item.price} UZS`)
+                .join("\n") +
+              `\nJami: ${total} UZS`
+          );
+          order = [];
+          total = 0;
+          updateOrderList();
+        } catch (error) {
+          alert("Saqlashda xato yuz berdi: " + error.message);
+        }
+      }
+
+      // Sahifa yuklanganda
+      window.onload = function () {
+        // localStorage ishlayotganligini tekshirish
+        try {
+          localStorage.setItem("test", "test");
+          localStorage.removeItem("test");
+          console.log("localStorage ishlamoqda");
+        } catch (error) {
+          alert("localStorage ishlamayapti: " + error.message);
+        }
+        // QR kodni generatsiya qilish
+        try {
+          new QRCode(document.getElementById("qrcode"), window.location.href);
+        } catch (error) {
+          console.log("QR kod xatosi: " + error.message);
+        }
+      };
+    </script>
+  </body>
+</html>
