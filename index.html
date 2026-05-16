@@ -6,34 +6,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Asadbek Muratov Kafe Menyusi</title>
-    <script></script>
+    <title>Oshxona Buyurtmalari</title>
     <style>
       body {
         font-family: Arial, sans-serif;
         background-color: #f4f4f4;
         margin: 0;
         padding: 20px;
-      }
-      #menu-posts li img {
-        width: 250px;
-        height: 250px;
-        object-fit: cover;
-        border-radius: 5px;
-        margin-right: 10px;
-      }
-
-      #menu-posts li {
-        display: flex;
-        align-items: center; /* rasm va matn bir qatorda tekis */
-        justify-content: space-between;
-        padding: 10px;
-        border-bottom: 1px solid #ddd;
-      }
-
-      .menu-item {
-        display: flex;
-        align-items: center;
       }
 
       .container {
@@ -45,38 +24,24 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       }
 
-      h1,
-      h2 {
+      h1 {
         text-align: center;
         color: #333;
       }
 
-      #qrcode {
-        text-align: center;
-        margin: 20px 0;
-      }
-
-      #menu,
-      #order {
-        margin: 20px 0;
-      }
-
-      #menu-posts,
-      #order-posts {
+      #orders-list {
         list-style: none;
         padding: 0;
       }
 
-      #menu-posts li,
-      #order-posts li {
-        display: flex;
-        justify-content: space-between;
+      #orders-list li {
         padding: 10px;
         border-bottom: 1px solid #ddd;
+        margin-bottom: 10px;
       }
 
       button {
-        background-color: #28a745;
+        background-color: #dc3545;
         color: white;
         border: none;
         padding: 8px 12px;
@@ -85,129 +50,83 @@
       }
 
       button:hover {
-        background-color: #218838;
-      }
-
-      p {
-        font-weight: bold;
+        background-color: #c82333;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Asadbek Muratov Kafe Menyusi</h1>
-      <!-- <div id="qrcode"></div> -->
-      <div id="menu">
-        <h2>Taomlar</h2>
-        <ul id="menu-posts">
-          <li>
-            <span>Osh - 25000 UZS</span>
-            <img src="osh.jpg" alt="Osh" />
-            <button onclick="addToOrder('Osh', 25000)">
-              Buyurtma qo'shish
-            </button>
-          </li>
-          <li>
-            <span>Somsa - 10000 UZS</span>
-            <img src="somsa.jpg" alt="Somsa" />
-            <button onclick="addToOrder('Somsa', 10000)">
-              Buyurtma qo'shish
-            </button>
-          </li>
-          <li>
-            <span>Shashlik - 30000 UZS</span>
-            <img src="shashlik.jpg" alt="Shashlik" />
-            <button onclick="addToOrder('Shashlik', 30000)">
-              Buyurtma qo'shish
-            </button>
-          </li>
-        </ul>
-      </div>
-      <div id="order">
-        <h2>Buyurtmalar</h2>
-        <ul id="order-posts"></ul>
-        <p>Jami: <span id="total">0</span> UZS</p>
-        <button onclick="submitOrder()">Buyurtma yuborish</button>
-      </div>
-      <!--<p><a href="kitchen.html">Oshxona sahifasiga o'tish</a></p>-->
+      <h1>Oshxona Buyurtmalari</h1>
+      <ul id="orders-list"></ul>
+      <button onclick="clearOrders()">Barcha buyurtmalarni tozalash</button>
+      <!--<p><a href="index.html">Menyu sahifasiga o'tish</a></p>-->
     </div>
     <script>
-      let order = [];
-      let total = 0;
-
-      // Buyurtmalar ro'yxatini yangilash
-      function updateOrderList() {
-        const orderList = document.getElementById("order-posts");
-        const totalElement = document.getElementById("total");
-        orderList.innerHTML = "";
-        order.forEach((item) => {
-          const li = document.createElement("li");
-          li.textContent = `${item.item} - ${item.price} UZS`;
-          orderList.appendChild(li);
-        });
-        totalElement.textContent = total;
-      }
-
-      // Buyurtma qo'shish
-      function addToOrder(item, price) {
-        order.push({ item, price });
-        total += price;
-        updateOrderList();
-      }
-
-      // Buyurtma yuborish
-      function submitOrder() {
-        if (order.length === 0) {
-          alert("Buyurtma boʻsh!");
-          return;
-        }
-        // localStorage'dan mavjud buyurtmalarni olish
-        let submittedOrders =
-          JSON.parse(localStorage.getItem("submittedOrders")) || [];
-        const newOrder = {
-          id: submittedOrders.length + 1,
-          items: order,
-          total: total,
-          timestamp: new Date().toISOString(),
-        };
-        submittedOrders.push(newOrder);
+      function loadOrders() {
+        const ordersList = document.getElementById("orders-list");
         try {
-          localStorage.setItem(
-            "submittedOrders",
-            JSON.stringify(submittedOrders)
-          );
-          alert(
-            "Buyurtma yuborildi va saqlandi:\n" +
-              order
-                .map((item) => `${item.item}: ${item.price} UZS`)
-                .join("\n") +
-              `\nJami: ${total} UZS`
-          );
-          order = [];
-          total = 0;
-          updateOrderList();
+          const submittedOrders =
+            JSON.parse(localStorage.getItem("submittedOrders")) || [];
+          ordersList.innerHTML = "";
+          if (submittedOrders.length === 0) {
+            ordersList.innerHTML = "<li>Hozircha buyurtmalar yo‘q</li>";
+            return;
+          }
+
+          // Taom nomiga qarab rasm yo‘llarini belgilash
+          const imageMap = {
+            Osh: "images/osh.jpg",
+            Somsa: "images/somsa.jpg",
+            Shashlik: "images/shashlik.jpg",
+          };
+
+          submittedOrders.forEach((order) => {
+            const li = document.createElement("li");
+            let itemsHtml = order.items
+              .map((item) => {
+                const imgSrc = imageMap[item.item] || "images/default.jpg";
+                return `
+          <div style="display: flex; align-items: center; margin-bottom: 5px;">
+            <img src="${imgSrc}" alt="${item.item}" style="width: 60px; height: 60px; object-fit: cover; margin-right: 10px; border-radius: 6px;">
+            <span>${item.item}: ${item.price} UZS</span>
+          </div>
+        `;
+              })
+              .join("");
+
+            li.innerHTML = `
+        <strong>Buyurtma ID: ${order.id}</strong><br>
+        ${itemsHtml}
+        <strong>Jami:</strong> ${order.total} UZS<br>
+        <strong>Vaqt:</strong> ${new Date(order.timestamp).toLocaleString(
+          "uz-UZ"
+        )}
+      `;
+            ordersList.appendChild(li);
+          });
         } catch (error) {
-          alert("Saqlashda xato yuz berdi: " + error.message);
+          ordersList.innerHTML =
+            "<li>Buyurtmalarni yuklashda xato: " + error.message + "</li>";
         }
       }
+      // Buyurtmalarni tozalash
+      function clearOrders() {
+        if (confirm("Barcha buyurtmalarni ochirishni xohlaysizmi?")) {
+          try {
+            localStorage.removeItem("submittedOrders");
+            loadOrders();
+            alert("Buyurtmalar tozalandi!");
+          } catch (error) {
+            alert("Tozalashda xato: " + error.message);
+          }
+        }
+      }
 
-      // Sahifa yuklanganda
-      window.onload = function () {
-        // localStorage ishlayotganligini tekshirish
-        try {
-          localStorage.setItem("test", "test");
-          localStorage.removeItem("test");
-          console.log("localStorage ishlamoqda");
-        } catch (error) {
-          alert("localStorage ishlamayapti: " + error.message);
-        }
-        // QR kodni generatsiya qilish
-        try {
-          new QRCode(document.getElementById("qrcode"), window.location.href);
-        } catch (error) {
-          console.log("QR kod xatosi: " + error.message);
-        }
-      };
+      // Sahifa yuklanganda buyurtmalarni yuklash
+      window.onload = loadOrders;
+
+      // Har 5 soniyada yangilash (tezroq sinash uchun)
+      setInterval(loadOrders, 5000);
     </script>
   </body>
 </html>
